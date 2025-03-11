@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +23,7 @@ public class BookService {
     }
 
     public List<Book> getBooksByName(String name) {
-        return books.stream().filter(book -> book.getName().equals(name)).collect(Collectors.toList());
+        return books.stream().filter(book -> book.getName().equals(name))
+                .collect(Collectors.toList());
     }
 }
