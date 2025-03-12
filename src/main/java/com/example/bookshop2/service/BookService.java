@@ -12,9 +12,9 @@ public class BookService {
     private final List<Book> books = new ArrayList<>();
 
     public BookService() {
-        books.add(new Book(1L, "Rivers and oceans", "Adventure"));
-        books.add(new Book(2L, "Physics in movement", "Science"));
-        books.add(new Book(3L, "TV setting guide", "Education"));
+        books.add(new Book(1L, "Rivers", "Adventure"));
+        books.add(new Book(2L, "Physics", "Science"));
+        books.add(new Book(3L, "English", "Education"));
         books.add(new Book(4L, "Cars", "Magazine"));
     }
 
