@@ -8,6 +8,7 @@ class Bookshop2ApplicationTests {
 
     @Test
     void contextLoads() {
+        //Пока что здесь пусто, потом что-то классное будет
     }
 
 }
