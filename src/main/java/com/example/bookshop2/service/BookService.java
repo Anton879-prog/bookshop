@@ -24,6 +24,6 @@ public class BookService {
 
     public List<Book> getBooksByName(String name) {
         return books.stream().filter(book -> book.getName().equals(name))
-                .collect(Collectors.toList());
+                .toList();
     }
 }
