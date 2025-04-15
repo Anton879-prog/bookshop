@@ -1,35 +1,51 @@
 package com.example.bookshop2.controller;
 
-import com.example.bookshop2.exception.BookNotFoundException;
-import com.example.bookshop2.model.Book;
+import com.example.bookshop2.dto.BookDto;
+import com.example.bookshop2.dto.CreateBookDto;
 import com.example.bookshop2.service.BookService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 
 @RestController
 @RequestMapping("/books")
 public class BookController {
+
     private final BookService bookService;
 
     public BookController(BookService bookService) {
         this.bookService = bookService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Book>> search(@RequestParam String name) {
-        List<Book> books = bookService.getBooksByName(name);
-        return books.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(books);
+    @GetMapping
+    public List<BookDto> getAllBooks() {
+        return bookService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Book getBookById(@PathVariable Long id) {
-        return bookService.getBookById(id)
-                .orElseThrow(() -> new BookNotFoundException(id));
+    public ResponseEntity<BookDto> getBookById(@PathVariable Long id) {
+        BookDto book = bookService.findById(id);
+        return ResponseEntity.ok(book);
+    }
+
+    @PostMapping
+    public ResponseEntity<BookDto> createBook(@RequestBody @Valid CreateBookDto dto) {
+        BookDto created = bookService.create(dto);
+        return ResponseEntity.ok(created);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        bookService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
