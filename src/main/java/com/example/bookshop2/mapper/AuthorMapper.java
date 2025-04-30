@@ -6,6 +6,8 @@ import com.example.bookshop2.model.Author;
 
 public class AuthorMapper {
 
+    private AuthorMapper() {}
+
     public static AuthorDto toDto(Author author) {
         AuthorDto dto = new AuthorDto();
         dto.setId(author.getId());

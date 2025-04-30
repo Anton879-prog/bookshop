@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 
 public class BookMapper {
 
+    private BookMapper() {}
+
     public static BookDto toDto(Book book) {
         BookDto dto = new BookDto();
         dto.setId(book.getId());

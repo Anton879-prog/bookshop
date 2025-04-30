@@ -34,7 +34,7 @@ public class BookService {
     public List<BookDto> findAll() {
         return bookRepository.findAll().stream()
                 .map(BookMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public BookDto findById(Long id) {

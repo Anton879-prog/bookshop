@@ -9,7 +9,6 @@ import com.example.bookshop2.model.Publisher;
 import com.example.bookshop2.repository.PublisherRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +22,7 @@ public class PublisherService {
     public List<PublisherDto> findAll() {
         return publisherRepository.findAll().stream()
                 .map(PublisherMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public PublisherDto findById(Long id) {

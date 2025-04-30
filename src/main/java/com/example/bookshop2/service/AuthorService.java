@@ -9,7 +9,6 @@ import com.example.bookshop2.model.Book;
 import com.example.bookshop2.repository.AuthorRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,7 +22,7 @@ public class AuthorService {
     public List<AuthorDto> findAll() {
         return authorRepository.findAll().stream()
                 .map(AuthorMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public AuthorDto findById(Long id) {
