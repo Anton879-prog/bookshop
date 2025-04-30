@@ -15,10 +15,21 @@ public class BookMapper {
         dto.setId(book.getId());
         dto.setName(book.getName());
         dto.setGenre(book.getGenre());
-        dto.setPublisherName(book.getPublisher().getName());
-        dto.setAuthors(book.getAuthors().stream()
-                .map(Author::getName)
-                .collect(Collectors.toSet()));
+
+        Publisher publisher = book.getPublisher();
+        dto.setPublisherName(publisher != null ? publisher.getName() : "Deleted");
+
+        Set<Author> authors = book.getAuthors();
+        if (authors == null || authors.isEmpty()) {
+            dto.setAuthors(Set.of("Deleted"));
+        } else {
+            dto.setAuthors(
+                    authors.stream()
+                            .map(Author::getName)
+                            .collect(Collectors.toSet())
+            );
+        }
+
         return dto;
     }
 

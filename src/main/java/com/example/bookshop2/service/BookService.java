@@ -2,6 +2,7 @@ package com.example.bookshop2.service;
 
 import com.example.bookshop2.dto.BookDto;
 import com.example.bookshop2.dto.CreateBookDto;
+import com.example.bookshop2.exception.BookNotFoundException;
 import com.example.bookshop2.mapper.BookMapper;
 import com.example.bookshop2.model.Author;
 import com.example.bookshop2.model.Book;
@@ -45,7 +46,8 @@ public class BookService {
     @Transactional
     public BookDto create(CreateBookDto dto) {
         Publisher publisher = publisherRepository.findByName(dto.getPublisherName())
-                .orElseGet(() -> publisherRepository.save(new Publisher(null, dto.getPublisherName(), null)));
+                .orElseGet(() -> publisherRepository
+                        .save(new Publisher(null, dto.getPublisherName(), null)));
 
         Set<Author> authors = dto.getAuthorNames().stream()
                 .map(name -> authorRepository.findByName(name)
@@ -59,4 +61,27 @@ public class BookService {
     public void delete(Long id) {
         bookRepository.deleteById(id);
     }
+
+    @Transactional
+    public BookDto update(Long id, CreateBookDto dto) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+
+        Publisher publisher = publisherRepository.findByName(dto.getPublisherName())
+                .orElseGet(() -> publisherRepository
+                        .save(new Publisher(null, dto.getPublisherName(), null)));
+
+        Set<Author> authors = dto.getAuthorNames().stream()
+                .map(name -> authorRepository.findByName(name)
+                        .orElseGet(() -> authorRepository.save(new Author(null, name, null))))
+                .collect(Collectors.toSet());
+
+        book.setName(dto.getName());
+        book.setGenre(dto.getGenre());
+        book.setPublisher(publisher);
+        book.setAuthors(authors);
+
+        return BookMapper.toDto(bookRepository.save(book));
+    }
+
 }
