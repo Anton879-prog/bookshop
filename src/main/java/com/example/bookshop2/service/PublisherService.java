@@ -27,7 +27,7 @@ public class PublisherService {
 
     public PublisherDto findById(Long id) {
         Publisher publisher = publisherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publisher not found"));
+                .orElseThrow(() -> new PublisherNotFoundException(id));
         return PublisherMapper.toDto(publisher);
     }
 
@@ -40,7 +40,7 @@ public class PublisherService {
     @Transactional
     public PublisherDto update(Long id, CreatePublisherDto dto) {
         Publisher publisher = publisherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publisher not found"));
+                .orElseThrow(() -> new PublisherNotFoundException(id));
         publisher.setName(dto.getName());
         return PublisherMapper.toDto(publisherRepository.save(publisher));
     }

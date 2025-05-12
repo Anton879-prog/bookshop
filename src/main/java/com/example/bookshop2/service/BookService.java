@@ -39,7 +39,7 @@ public class BookService {
 
     public BookDto findById(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
+                .orElseThrow(() -> new BookNotFoundException(id));
         return BookMapper.toDto(book);
     }
 
@@ -59,6 +59,9 @@ public class BookService {
     }
 
     public void delete(Long id) {
+        if (!bookRepository.existsById(id)) {
+            throw new BookNotFoundException(id);
+        }
         bookRepository.deleteById(id);
     }
 

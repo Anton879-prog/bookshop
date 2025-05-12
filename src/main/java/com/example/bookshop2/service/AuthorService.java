@@ -27,7 +27,7 @@ public class AuthorService {
 
     public AuthorDto findById(Long id) {
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+                .orElseThrow(() -> new AuthorNotFoundException(id));
         return AuthorMapper.toDto(author);
     }
 
@@ -40,7 +40,7 @@ public class AuthorService {
     @Transactional
     public AuthorDto update(Long id, CreateAuthorDto dto) {
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+                .orElseThrow(() -> new AuthorNotFoundException(id));
         author.setName(dto.getName());
         return AuthorMapper.toDto(authorRepository.save(author));
     }
