@@ -6,6 +6,7 @@ import com.example.bookshop2.dto.UpdateBookDto;
 import com.example.bookshop2.model.Author;
 import com.example.bookshop2.model.Book;
 import com.example.bookshop2.model.Publisher;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,14 +21,12 @@ public class BookMapper {
         dto.setGenre(book.getGenre());
 
         Publisher publisher = book.getPublisher();
-        dto.setPublisherName(publisher.getName());
+        dto.setPublisherName(publisher != null ? publisher.getName() : null);
 
         Set<Author> authors = book.getAuthors();
-
-        dto.setAuthors(
-                authors.stream().map(Author::getName)
-                        .collect(Collectors.toSet())
-        );
+        dto.setAuthors(authors != null
+                ? authors.stream().map(Author::getName).collect(Collectors.toSet())
+                : Collections.emptySet());
 
         return dto;
     }
