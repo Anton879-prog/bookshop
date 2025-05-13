@@ -1,10 +1,8 @@
 package com.example.bookshop2.service;
 
-import com.example.bookshop2.dto.CreatePublisherDto;
 import com.example.bookshop2.dto.PublisherDto;
 import com.example.bookshop2.exception.PublisherNotFoundException;
 import com.example.bookshop2.mapper.PublisherMapper;
-import com.example.bookshop2.model.Book;
 import com.example.bookshop2.model.Publisher;
 import com.example.bookshop2.repository.PublisherRepository;
 import jakarta.transaction.Transactional;
@@ -14,9 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class PublisherService {
     private final PublisherRepository publisherRepository;
+    private final CacheManager cacheManager;
 
-    public PublisherService(PublisherRepository publisherRepository) {
+    public PublisherService(PublisherRepository publisherRepository, CacheManager cacheManager) {
         this.publisherRepository = publisherRepository;
+        this.cacheManager = cacheManager;
     }
 
     public List<PublisherDto> findAll() {
@@ -26,36 +26,56 @@ public class PublisherService {
     }
 
     public PublisherDto findById(Long id) {
+        String cacheKey = "publisher_" + id;
+        PublisherDto cachedPublisher = cacheManager.getFromCache(cacheKey, PublisherDto.class);
+        if (cachedPublisher != null) {
+            return cachedPublisher;
+        }
+
         Publisher publisher = publisherRepository.findById(id)
                 .orElseThrow(() -> new PublisherNotFoundException(id));
-        return PublisherMapper.toDto(publisher);
+        PublisherDto publisherDto = PublisherMapper.toDto(publisher);
+        cacheManager.saveToCache(cacheKey, publisherDto);
+        return publisherDto;
     }
 
     @Transactional
-    public PublisherDto create(CreatePublisherDto dto) {
-        Publisher publisher = PublisherMapper.fromCreateDto(dto);
-        return PublisherMapper.toDto(publisherRepository.save(publisher));
+    public PublisherDto create(String name) {
+        Publisher publisher = new Publisher(null, name, null);
+        Publisher savedPublisher = publisherRepository.save(publisher);
+
+        // Очистка кэша для нового издателя
+        cacheManager.clearPublisherCache(savedPublisher.getName());
+        cacheManager.clearByPrefix("publisher_" + savedPublisher.getId());
+
+        return PublisherMapper.toDto(savedPublisher);
     }
 
-    @Transactional
-    public PublisherDto update(Long id, CreatePublisherDto dto) {
-        Publisher publisher = publisherRepository.findById(id)
-                .orElseThrow(() -> new PublisherNotFoundException(id));
-        publisher.setName(dto.getName());
-        return PublisherMapper.toDto(publisherRepository.save(publisher));
-    }
-
-    @Transactional
     public void delete(Long id) {
         Publisher publisher = publisherRepository.findById(id)
                 .orElseThrow(() -> new PublisherNotFoundException(id));
+        String publisherName = publisher.getName();
 
-        // Разрываем связь с книгами
-        for (Book book : publisher.getBooks()) {
-            book.setPublisher(null);
-        }
+        publisherRepository.deleteById(id);
 
-        publisherRepository.delete(publisher);
+        // Очистка кэша для издателя
+        cacheManager.clearPublisherCache(publisherName);
+        cacheManager.clearByPrefix("publisher_" + id);
     }
 
+    @Transactional
+    public PublisherDto update(Long id, String name) {
+        Publisher publisher = publisherRepository.findById(id)
+                .orElseThrow(() -> new PublisherNotFoundException(id));
+        String oldPublisherName = publisher.getName();
+
+        publisher.setName(name);
+
+        // Очистка кэша для старого и нового имени издателя
+        cacheManager.clearPublisherCache(oldPublisherName);
+        cacheManager.clearPublisherCache(name);
+        cacheManager.clearByPrefix("publisher_" + id);
+        Publisher savedPublisher = publisherRepository.save(publisher);
+        return PublisherMapper.toDto(savedPublisher);
+    }
 }

@@ -20,7 +20,7 @@ public class BookMapper {
         dto.setGenre(book.getGenre());
 
         Publisher publisher = book.getPublisher();
-        dto.setPublisherName(publisher != null ? publisher.getName() : "Deleted");
+        dto.setPublisherName(publisher.getName());
 
         Set<Author> authors = book.getAuthors();
 
