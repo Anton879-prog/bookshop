@@ -2,7 +2,9 @@ package com.example.bookshop2.service;
 
 import com.example.bookshop2.dto.BookDto;
 import com.example.bookshop2.dto.CreateBookDto;
+import com.example.bookshop2.dto.UpdateBookDto;
 import com.example.bookshop2.exception.BookNotFoundException;
+import com.example.bookshop2.exception.PublisherNotFoundByNameException;
 import com.example.bookshop2.mapper.BookMapper;
 import com.example.bookshop2.model.Author;
 import com.example.bookshop2.model.Book;
@@ -16,19 +18,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
     private final PublisherRepository publisherRepository;
+    private final CacheManager cacheManager;
 
     public BookService(BookRepository bookRepository,
                        AuthorRepository authorRepository,
-                       PublisherRepository publisherRepository) {
+                       PublisherRepository publisherRepository,
+                       CacheManager cacheManager) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.publisherRepository = publisherRepository;
+        this.cacheManager = cacheManager;
     }
 
     public List<BookDto> findAll() {
@@ -66,25 +70,44 @@ public class BookService {
     }
 
     @Transactional
-    public BookDto update(Long id, CreateBookDto dto) {
+    public BookDto update(Long id, UpdateBookDto dto) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new BookNotFoundException(id));
 
-        Publisher publisher = publisherRepository.findByName(dto.getPublisherName())
-                .orElseGet(() -> publisherRepository
-                        .save(new Publisher(null, dto.getPublisherName(), null)));
+        Publisher publisher = null;
+        if (dto.getPublisherName() != null) {
+            publisher = publisherRepository.findByName(dto.getPublisherName())
+                    .orElseGet(() -> publisherRepository
+                            .save(new Publisher(null, dto.getPublisherName(), null)));
+        }
 
-        Set<Author> authors = dto.getAuthorNames().stream()
-                .map(name -> authorRepository.findByName(name)
-                        .orElseGet(() -> authorRepository.save(new Author(null, name, null))))
-                .collect(Collectors.toSet());
+        Set<Author> authors = null;
+        if (dto.getAuthorNames() != null) {
+            authors = dto.getAuthorNames().stream()
+                    .map(name -> authorRepository.findByName(name)
+                            .orElseGet(() -> authorRepository.save(new Author(null, name, null))))
+                    .collect(Collectors.toSet());
+        }
 
-        book.setName(dto.getName());
-        book.setGenre(dto.getGenre());
-        book.setPublisher(publisher);
-        book.setAuthors(authors);
-
+        BookMapper.updateFromDto(book, dto, authors, publisher);
         return BookMapper.toDto(bookRepository.save(book));
     }
 
+    public List<BookDto> findByPublisherName(String publisherName) {
+        if (publisherRepository.findByName(publisherName).isEmpty()) {
+            throw new PublisherNotFoundByNameException(publisherName);
+        }
+
+        List<BookDto> cachedBooks = cacheManager.getBooksByPublisher(publisherName);
+        if (cachedBooks != null) {
+            return cachedBooks;
+        }
+
+        List<BookDto> books = bookRepository.findByPublisherNameJpql(publisherName).stream()
+                .map(BookMapper::toDto)
+                .toList();
+
+        cacheManager.putBooksByPublisher(publisherName, books);
+        return books;
+    }
 }

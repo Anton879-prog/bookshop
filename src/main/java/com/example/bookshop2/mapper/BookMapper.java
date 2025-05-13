@@ -2,6 +2,7 @@ package com.example.bookshop2.mapper;
 
 import com.example.bookshop2.dto.BookDto;
 import com.example.bookshop2.dto.CreateBookDto;
+import com.example.bookshop2.dto.UpdateBookDto;
 import com.example.bookshop2.model.Author;
 import com.example.bookshop2.model.Book;
 import com.example.bookshop2.model.Publisher;
@@ -22,15 +23,11 @@ public class BookMapper {
         dto.setPublisherName(publisher != null ? publisher.getName() : "Deleted");
 
         Set<Author> authors = book.getAuthors();
-        if (authors == null || authors.isEmpty()) {
-            dto.setAuthors(Set.of("Deleted"));
-        } else {
-            dto.setAuthors(
-                    authors.stream()
-                            .map(Author::getName)
-                            .collect(Collectors.toSet())
-            );
-        }
+
+        dto.setAuthors(
+                authors.stream().map(Author::getName)
+                        .collect(Collectors.toSet())
+        );
 
         return dto;
     }
@@ -42,5 +39,21 @@ public class BookMapper {
         book.setAuthors(authors);
         book.setPublisher(publisher);
         return book;
+    }
+
+    public static void updateFromDto(Book book, UpdateBookDto dto,
+                                     Set<Author> authors, Publisher publisher) {
+        if (dto.getName() != null) {
+            book.setName(dto.getName());
+        }
+        if (dto.getGenre() != null) {
+            book.setGenre(dto.getGenre());
+        }
+        if (publisher != null) {
+            book.setPublisher(publisher);
+        }
+        if (authors != null) {
+            book.setAuthors(authors);
+        }
     }
 }
