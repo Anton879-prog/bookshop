@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class PublisherService {
     private final PublisherRepository publisherRepository;
     private final CacheManager cacheManager;
-    private final String publisherString = "publisher_";
+    private static final String publisherString = "publisher_";
 
     public PublisherService(PublisherRepository publisherRepository, CacheManager cacheManager) {
         this.publisherRepository = publisherRepository;
