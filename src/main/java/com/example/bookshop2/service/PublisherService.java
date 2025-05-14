@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class PublisherService {
     private final PublisherRepository publisherRepository;
     private final CacheManager cacheManager;
+    private final String publisherString = "publisher_";
 
     public PublisherService(PublisherRepository publisherRepository, CacheManager cacheManager) {
         this.publisherRepository = publisherRepository;
@@ -26,7 +27,7 @@ public class PublisherService {
     }
 
     public PublisherDto findById(Long id) {
-        String cacheKey = "publisher_" + id;
+        String cacheKey = publisherString + id;
         PublisherDto cachedPublisher = cacheManager.getFromCache(cacheKey, PublisherDto.class);
         if (cachedPublisher != null) {
             return cachedPublisher;
@@ -46,7 +47,7 @@ public class PublisherService {
 
         // Очистка кэша для нового издателя
         cacheManager.clearPublisherCache(savedPublisher.getName());
-        cacheManager.clearByPrefix("publisher_" + savedPublisher.getId());
+        cacheManager.clearByPrefix(publisherString + savedPublisher.getId());
 
         return PublisherMapper.toDto(savedPublisher);
     }
@@ -60,7 +61,7 @@ public class PublisherService {
 
         // Очистка кэша для издателя
         cacheManager.clearPublisherCache(publisherName);
-        cacheManager.clearByPrefix("publisher_" + id);
+        cacheManager.clearByPrefix(publisherString + id);
     }
 
     @Transactional
@@ -74,7 +75,7 @@ public class PublisherService {
         // Очистка кэша для старого и нового имени издателя
         cacheManager.clearPublisherCache(oldPublisherName);
         cacheManager.clearPublisherCache(name);
-        cacheManager.clearByPrefix("publisher_" + id);
+        cacheManager.clearByPrefix(publisherString + id);
         Publisher savedPublisher = publisherRepository.save(publisher);
         return PublisherMapper.toDto(savedPublisher);
     }
