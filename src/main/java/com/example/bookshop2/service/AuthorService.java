@@ -49,7 +49,7 @@ public class AuthorService {
         Author author = new Author(null, dto.getName(), null);
         Author savedAuthor = authorRepository.save(author);
 
-        // Очистка кэша для нового автора
+
         cacheManager.clearAuthorCache(savedAuthor.getId());
 
         return AuthorMapper.toDto(savedAuthor);
@@ -61,7 +61,7 @@ public class AuthorService {
         }
         authorRepository.deleteById(id);
 
-        // Очистка кэша для автора
+
         cacheManager.clearAuthorCache(id);
     }
 
@@ -77,7 +77,7 @@ public class AuthorService {
         author.setName(name);
         Author savedAuthor = authorRepository.save(author);
 
-        // Очистка кэша для автора
+
         cacheManager.clearAuthorCache(id);
 
         return AuthorMapper.toDto(savedAuthor);
