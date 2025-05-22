@@ -32,7 +32,7 @@ public class CacheManager {
     public <T> T getFromCache(String key, Class<T> type) {
         CacheEntry entry = cache.get(key);
         if (entry != null && !entry.isExpired()) {
-            LOGGER.info("✅ Данные взяты из кэша: {}", key);
+            LOGGER.info("✅ Данные взяты из кэша: {}", key); // NOSONAR
             return type.cast(entry.getValue());
         }
         cache.remove(key);
